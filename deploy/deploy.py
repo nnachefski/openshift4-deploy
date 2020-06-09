@@ -10,7 +10,7 @@ SUPPORTED_CONTAINER_RUNTIMES = ['podman', 'docker']
 
 
 class OpenShiftDeploy(object):
-    def __init__(self, skip_update=False):
+    def __init__(self, skip_update=False, container_image=None):
         self.skip_update = skip_update
 
         self.user_home_dir = self._user_home_dir()
@@ -18,7 +18,7 @@ class OpenShiftDeploy(object):
         self.aws_credentials_dir = self._aws_credentials_dir()
 
         self.container_runtime = self._container_runtime()
-        self.container_image = 'quay.io/jaredhocutt/openshift4-deploy:latest'
+        self.container_image = container_image or 'quay.io/jaredhocutt/openshift4-deploy:latest'
         self.container_run_command = self._container_run_command()
 
     def _user_home_dir(self):

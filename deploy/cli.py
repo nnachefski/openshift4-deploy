@@ -16,6 +16,10 @@ class OpenShiftDeployCLI(object):
             action='store_true',
             help='skip automatic update of the conatiner image'
         )
+        self.parent_parser.add_argument(
+            '--container-image',
+            help='container image to use (for dev purposes)'
+        )
 
         self.parent_parser_playbook = argparse.ArgumentParser(add_help=False)
         self.parent_parser_playbook.add_argument(

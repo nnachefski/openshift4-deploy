@@ -12,6 +12,7 @@ if __name__ == '__main__':
     try:
         od = OpenShiftDeploy(
             skip_update=known_args.skip_update,
+            container_image=known_args.container_image or None,
         )
     except ContainerRuntimeMissingError:
         print('\n'.join([
