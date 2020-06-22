@@ -10,21 +10,32 @@
 
             - aws
             - aws_govcloud
-      when: cloud not in ['aws', 'aws_govcloud']
+            - azure
+      tags: [always]
+      when: cloud not in ['aws', 'aws_govcloud', 'azure']
 
 - hosts: localhost
   tasks:
-    - include_role:
+    - name: Create infrastructure in AWS
+      include_role:
         name: infrastructure
         tasks_from: aws_create
       tags: [infrastructure]
       when: cloud == 'aws'
 
-    - include_role:
+    - name: Create infrastructure in AWS GovCloud
+      include_role:
         name: infrastructure
         tasks_from: aws_govcloud_create
       tags: [infrastructure]
       when: cloud == 'aws_govcloud'
+
+    - name: Create infrastructure in Azure
+      include_role:
+        name: infrastructure
+        tasks_from: azure_create
+      tags: [infrastructure]
+      when: cloud == 'azure'
 
 - hosts: bastion
   tasks:
