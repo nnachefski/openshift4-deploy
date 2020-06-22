@@ -2,3 +2,5 @@
 # defaults file for host_prep
 
 additional_authorized_keys: []
+
+helm_version: 3.2.3

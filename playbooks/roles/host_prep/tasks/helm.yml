@@ -1,0 +1,36 @@
+---
+
+- name: Check for Helm
+  stat:
+    path: /usr/local/bin/helm
+  register: r_check_helm
+
+- name: Create temporary download directory
+  tempfile:
+    state: directory
+  register: r_create_helm_temp_download_dir
+  when: not r_check_helm.stat.exists
+
+- name: Install Helm
+  block:
+    - name: Download and unarchive Helm
+      unarchive:
+        src: https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz
+        dest: "{{ r_create_helm_temp_download_dir.path }}"
+        remote_src: yes
+
+    - name: Copy Helm binary
+      copy:
+        src: "{{ r_create_helm_temp_download_dir.path }}/linux-amd64/helm"
+        dest: /usr/local/bin
+        remote_src: yes
+        owner: root
+        group: root
+        mode: 0755
+      become: yes
+  always:
+    - name: Cleanup temporary download directory
+      file:
+        path: "{{ r_create_helm_temp_download_dir.path }}"
+        state: absent
+  when: not r_check_helm.stat.exists
