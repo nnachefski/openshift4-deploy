@@ -1,5 +1,5 @@
 ---
-# defaults file for host_prep
+# defaults file for prep_bastion
 
 additional_authorized_keys: []
 

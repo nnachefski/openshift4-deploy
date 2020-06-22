@@ -29,8 +29,7 @@
 - hosts: bastion
   tasks:
     - import_role:
-        name: host_prep
-        tasks_from: bastion
+        name: prep_bastion
       tags: [prep]
 
     - import_role:
