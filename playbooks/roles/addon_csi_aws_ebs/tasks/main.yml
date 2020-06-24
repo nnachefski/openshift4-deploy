@@ -1,0 +1,44 @@
+---
+# tasks file for addon_csi_aws_ebs
+
+- name: Capture list of installed Helm charts
+  shell: >-
+    helm list
+    --namespace kube-system
+    --filter aws-ebs-csi-driver
+    --output json
+    --short
+  changed_when: no
+  register: r_addon_csi_aws_ebs_helm_charts
+
+- block:
+  - name: Copy Helm chart
+    copy:
+      src: aws-ebs-csi-driver
+      dest: "{{ ansible_user_dir }}"
+
+  - name: Install AWS EBS CSI driver
+    shell: >-
+      helm install aws-ebs-csi-driver
+      --namespace kube-system
+      --set enableVolumeScheduling=true
+      --set enableVolumeResizing=true
+      --set enableVolumeSnapshot=true
+      --wait
+      "{{ ansible_user_dir }}/aws-ebs-csi-driver"
+  when: "'aws-ebs-csi-driver' not in (r_addon_csi_aws_ebs_helm_charts.stdout | from_json)"
+
+- name: Create EBS storage class
+  k8s:
+    resource_definition:
+      kind: StorageClass
+      apiVersion: storage.k8s.io/v1
+      metadata:
+        annotations:
+          storageclass.kubernetes.io/is-default-class: "true"
+        name: ebs-sc
+      provisioner: ebs.csi.aws.com
+      volumeBindingMode: Immediate
+    state: present
+  vars:
+    ansible_python_interpreter: python3

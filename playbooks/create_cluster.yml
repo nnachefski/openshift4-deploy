@@ -43,3 +43,6 @@
     - import_role:
         name: output_cluster_info
       tags: [output]
+
+- name: Install addons
+  import_playbook: addons.yml
