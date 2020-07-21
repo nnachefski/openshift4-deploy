@@ -612,7 +612,7 @@ resource "aws_instance" "masters" {
 
   instance_type = "m5.xlarge"
   ami           = var.rhcos_ami
-  subnet_id     = local.private_subnets[count.index].id
+  subnet_id     = local.private_subnets[0].id
 
   root_block_device {
     volume_type           = "gp2"
@@ -643,7 +643,7 @@ resource "aws_instance" "workers" {
 
   instance_type = "m5.xlarge"
   ami           = var.rhcos_ami
-  subnet_id     = local.private_subnets[count.index].id
+  subnet_id     = local.private_subnets[0].id
 
   root_block_device {
     volume_type           = "gp2"
