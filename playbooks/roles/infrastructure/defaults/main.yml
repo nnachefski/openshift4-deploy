@@ -6,4 +6,4 @@ terraform_workspace: "openshift-deploy-{{ cluster_name }}-{{ base_domain | repla
 cluster_id: "{{ cluster_name }}-{{ base_domain | replace('.', '-') }}"
 cluster_domain: "{{ cluster_name }}.{{ base_domain }}"
 
-vpc_cidr: 172.31.0.0/16
+vpc_cidr: 172.20.0.0/16
