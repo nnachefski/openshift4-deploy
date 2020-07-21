@@ -610,7 +610,7 @@ resource "aws_instance" "bootstrap" {
 resource "aws_instance" "masters" {
   count = 3
 
-  instance_type = "m5.xlarge"
+  instance_type = "t3a.xlarge"
   ami           = var.rhcos_ami
   subnet_id     = local.private_subnets[0].id
 
@@ -641,9 +641,9 @@ resource "aws_instance" "masters" {
 resource "aws_instance" "workers" {
   count = 3
 
-  instance_type = "m5.xlarge"
+  instance_type = "t3a.xlarge"
   ami           = var.rhcos_ami
-  subnet_id     = local.private_subnets[0].id
+  subnet_id     = local.private_subnets[count.index].id
 
   root_block_device {
     volume_type           = "gp2"
