@@ -44,15 +44,11 @@ locals {
   )
 
   public_subnets = [
-    aws_subnet.public0,
-    aws_subnet.public1,
-    aws_subnet.public2
+    aws_subnet.public0
   ]
 
   private_subnets = [
-    aws_subnet.private0,
-    aws_subnet.private1,
-    aws_subnet.private2
+    aws_subnet.private0
   ]
 }
 
@@ -101,34 +97,6 @@ resource "aws_subnet" "public0" {
   )
 }
 
-resource "aws_subnet" "public1" {
-  vpc_id                  = aws_vpc.openshift.id
-  cidr_block              = cidrsubnet(var.vpc_cidr, 4, 1)
-  availability_zone       = data.aws_availability_zones.available.names[1]
-  map_public_ip_on_launch = true
-
-  tags = merge(
-    local.kubernetes_cluster_shared_tag,
-    map(
-      "Name", "${var.cluster_id}-public-${data.aws_availability_zones.available.names[1]}"
-    )
-  )
-}
-
-resource "aws_subnet" "public2" {
-  vpc_id                  = aws_vpc.openshift.id
-  cidr_block              = cidrsubnet(var.vpc_cidr, 4, 2)
-  availability_zone       = data.aws_availability_zones.available.names[2]
-  map_public_ip_on_launch = true
-
-  tags = merge(
-    local.kubernetes_cluster_shared_tag,
-    map(
-      "Name", "${var.cluster_id}-public-${data.aws_availability_zones.available.names[2]}"
-    )
-  )
-}
-
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.openshift.id
 
@@ -147,41 +115,11 @@ resource "aws_route_table_association" "public0" {
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "public1" {
-  subnet_id      = aws_subnet.public1.id
-  route_table_id = aws_route_table.public.id
-}
-
-resource "aws_route_table_association" "public2" {
-  subnet_id      = aws_subnet.public2.id
-  route_table_id = aws_route_table.public.id
-}
-
 resource "aws_eip" "natgw_public0" {
   vpc = true
 
   tags = {
     Name = "${var.cluster_id}-natgw-${data.aws_availability_zones.available.names[0]}"
-  }
-
-  depends_on = [aws_internet_gateway.openshift]
-}
-
-resource "aws_eip" "natgw_public1" {
-  vpc = true
-
-  tags = {
-    Name = "${var.cluster_id}-natgw-${data.aws_availability_zones.available.names[1]}"
-  }
-
-  depends_on = [aws_internet_gateway.openshift]
-}
-
-resource "aws_eip" "natgw_public2" {
-  vpc = true
-
-  tags = {
-    Name = "${var.cluster_id}-natgw-${data.aws_availability_zones.available.names[2]}"
   }
 
   depends_on = [aws_internet_gateway.openshift]
@@ -193,28 +131,6 @@ resource "aws_nat_gateway" "public0" {
 
   tags = {
     Name = "${var.cluster_id}-${data.aws_availability_zones.available.names[0]}"
-  }
-
-  depends_on = [aws_internet_gateway.openshift]
-}
-
-resource "aws_nat_gateway" "public1" {
-  subnet_id     = aws_subnet.public1.id
-  allocation_id = aws_eip.natgw_public1.id
-
-  tags = {
-    Name = "${var.cluster_id}-${data.aws_availability_zones.available.names[1]}"
-  }
-
-  depends_on = [aws_internet_gateway.openshift]
-}
-
-resource "aws_nat_gateway" "public2" {
-  subnet_id     = aws_subnet.public2.id
-  allocation_id = aws_eip.natgw_public2.id
-
-  tags = {
-    Name = "${var.cluster_id}-${data.aws_availability_zones.available.names[2]}"
   }
 
   depends_on = [aws_internet_gateway.openshift]
@@ -234,34 +150,6 @@ resource "aws_subnet" "private0" {
   )
 }
 
-resource "aws_subnet" "private1" {
-  vpc_id                  = aws_vpc.openshift.id
-  cidr_block              = cidrsubnet(var.vpc_cidr, 4, 4)
-  availability_zone       = data.aws_availability_zones.available.names[1]
-  map_public_ip_on_launch = false
-
-  tags = merge(
-    local.kubernetes_cluster_shared_tag,
-    map(
-      "Name", "${var.cluster_id}-private-${data.aws_availability_zones.available.names[1]}"
-    )
-  )
-}
-
-resource "aws_subnet" "private2" {
-  vpc_id                  = aws_vpc.openshift.id
-  cidr_block              = cidrsubnet(var.vpc_cidr, 4, 5)
-  availability_zone       = data.aws_availability_zones.available.names[2]
-  map_public_ip_on_launch = false
-
-  tags = merge(
-    local.kubernetes_cluster_shared_tag,
-    map(
-      "Name", "${var.cluster_id}-private-${data.aws_availability_zones.available.names[2]}"
-    )
-  )
-}
-
 resource "aws_route_table" "private0" {
   vpc_id = aws_vpc.openshift.id
 
@@ -275,45 +163,9 @@ resource "aws_route_table" "private0" {
   }
 }
 
-resource "aws_route_table" "private1" {
-  vpc_id = aws_vpc.openshift.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.public1.id
-  }
-
-  tags = {
-    Name = "${var.cluster_id}-private-${data.aws_availability_zones.available.names[1]}"
-  }
-}
-
-resource "aws_route_table" "private2" {
-  vpc_id = aws_vpc.openshift.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.public2.id
-  }
-
-  tags = {
-    Name = "${var.cluster_id}-private-${data.aws_availability_zones.available.names[2]}"
-  }
-}
-
 resource "aws_route_table_association" "private0" {
   subnet_id      = aws_subnet.private0.id
   route_table_id = aws_route_table.private0.id
-}
-
-resource "aws_route_table_association" "private1" {
-  subnet_id      = aws_subnet.private1.id
-  route_table_id = aws_route_table.private1.id
-}
-
-resource "aws_route_table_association" "private2" {
-  subnet_id      = aws_subnet.private2.id
-  route_table_id = aws_route_table.private2.id
 }
 
 ###############################################################################
@@ -325,9 +177,7 @@ resource "aws_lb" "masters_ext" {
   load_balancer_type = "network"
 
   subnets = [
-    aws_subnet.public0.id,
-    aws_subnet.public1.id,
-    aws_subnet.public2.id
+    aws_subnet.public0.id
   ]
 
   tags = merge(
@@ -344,9 +194,7 @@ resource "aws_lb" "masters_int" {
   load_balancer_type = "network"
 
   subnets = [
-    aws_subnet.private0.id,
-    aws_subnet.private1.id,
-    aws_subnet.private2.id
+    aws_subnet.private0.id
   ]
 
   tags = merge(
@@ -362,9 +210,7 @@ resource "aws_lb" "ingress" {
   load_balancer_type = "network"
 
   subnets = [
-    aws_subnet.public0.id,
-    aws_subnet.public1.id,
-    aws_subnet.public2.id
+    aws_subnet.public0.id
   ]
 
   tags = merge(
