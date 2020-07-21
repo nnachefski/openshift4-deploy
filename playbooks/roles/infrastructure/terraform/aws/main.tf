@@ -639,7 +639,7 @@ resource "aws_instance" "masters" {
 }
 
 resource "aws_instance" "workers" {
-  count = 3
+  count = 4
 
   instance_type = "t3a.xlarge"
   ami           = var.rhcos_ami
