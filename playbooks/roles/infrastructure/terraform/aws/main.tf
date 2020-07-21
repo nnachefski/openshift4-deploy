@@ -172,22 +172,6 @@ resource "aws_route_table_association" "private0" {
 # Load Balancing
 ###############################################################################
 
-resource "aws_lb" "masters_ext" {
-  name               = "${substr(var.cluster_id, 0, 28)}-ext"
-  load_balancer_type = "network"
-
-  subnets = [
-    aws_subnet.public0.id
-  ]
-
-  tags = merge(
-    local.kubernetes_cluster_shared_tag,
-    map(
-      "Name", "${var.cluster_id}-ext"
-    )
-  )
-}
-
 resource "aws_lb" "masters_int" {
   name               = "${substr(var.cluster_id, 0, 28)}-int"
   internal           = true
@@ -292,7 +276,7 @@ resource "aws_lb_target_group" "https" {
 }
 
 resource "aws_lb_listener" "api" {
-  load_balancer_arn = aws_lb.masters_ext.arn
+  load_balancer_arn = aws_lb.ingress.arn
   port              = 6443
   protocol          = "TCP"
 
@@ -678,7 +662,7 @@ resource "aws_route53_record" "api" {
   name    = "api"
   type    = "CNAME"
   ttl     = "300"
-  records = [aws_lb.masters_ext.dns_name]
+  records = [aws_lb.ingress.dns_name]
 }
 
 resource "aws_route53_record" "apps" {
